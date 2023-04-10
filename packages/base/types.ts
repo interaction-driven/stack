@@ -10,17 +10,19 @@ interface BOOL extends BoolExpression {
 }
 
 
-interface ADD extends BoolExpression{
-    type: 'add',
+export interface AND extends BoolExpression{
+    type: 'and',
     left: BoolExpression,
     right: BoolExpression,
 }
-interface OR extends BoolExpression {
+
+export interface OR extends BoolExpression {
     type: 'or',
     left: BoolExpression,
     right: BoolExpression,
 }
-interface NOT extends BoolExpression{
+
+export interface NOT extends BoolExpression{
     type: 'not',
     body: BoolExpression,
 }
@@ -57,8 +59,8 @@ interface LT<T extends Comparable> extends CompareExpression {
 /********************* 事件栈计算表达式系统 *****************/
 // 事件栈需求
 // CAUTION 这里的 user 和 payload 类型是运行时的类型，应该是根据具体的 interactions 定义生成出来的。这里只是个占位，为了给 EventStackComputation 用
-type Event = any
-export type EventStack = Event[]
+type InteractionInstance = any
+export type InteractionStack = InteractionInstance[]
 
 
 /**
@@ -82,8 +84,8 @@ interface PropertyGetter extends Comparable {
 
 }
 
-interface EventStackComputation<T> extends BoolExpression {
-    type: 'eventStackComputation',
+export interface InteractionStackComputation<T> extends BoolExpression {
+    type: 'interactionStackComputation',
     name: string,
     body: BoolExpression | FunctionBool<T>,
 }
@@ -96,22 +98,22 @@ interface EventStackMatcherBody {
 
 }
 
-interface EventStackMatcher {
-    type: 'eventStackMatcher',
+interface InteractionStackMatcher {
+    type: 'interactionStackMatcher',
     body: EventStackMatcherBody
 }
 
 // 对事件栈的计算
 interface EXIST extends BoolExpression {
     type: 'exist',
-    body: EventStack,
-    constraint: EventStackMatcher
+    body: InteractionStack,
+    constraint: InteractionStackMatcher
 }
 
 interface COUNT extends Comparable {
     type: 'number'
-    body: EventStack,
-    constraint: EventStackMatcher
+    body: InteractionStack,
+    constraint: InteractionStackMatcher
 }
 
 
@@ -123,16 +125,20 @@ export interface SystemState {
 // TODO 为什么这两个就够了？
 // CAUTION 这个 function 有可能是计算出来的任何东西，但一定是 comparable，这样才能继续被上层利用。不然没法和上面的静态系统结合了。
 // 这样所有接受  Comparable 的地方都可以写函数
+
+export type RuntimeFnBody<T> = (...rest: any[]) => Comparable
+
 export interface FunctionComparable<T> extends Comparable{
     name: string,
-    body: (stack: EventStack, event: Event, system: SystemState, ref: T) => Comparable
+    body: RuntimeFnBody<T>
 }
 
 // 这样所有接受  BOOL/BoolExpression 的地方都可以写函数
 export interface FunctionBool<T> extends BOOL {
     type: 'functionBool'
     name: string,
-    body: (stack: EventStack, event: Event, system: SystemState, ref: T) => boolean
+    body: (...rest: any[]) => boolean
+    // body: (stack: EventStack, event: Event, system: SystemState, ref: T) => boolean
 }
 
 
@@ -157,14 +163,14 @@ export interface ConceptType {
  */
 export interface DerivedConceptType<RuntimeConcept> extends ConceptType{
     concept: ConceptType,
-    attributive: EventStackComputation<RuntimeConcept>
+    attributive: InteractionStackComputation<RuntimeConcept>
 }
 
 
 export interface RoleType extends ConceptType{
-    type: 'role',
 }
 
+// export type RoleTypeLike = RoleType | DerivedConceptType<RoleType>
 export type RoleTypeLike = RoleType | DerivedConceptType<RoleType>
 
 /******************/
@@ -175,16 +181,86 @@ export type Payload = ConceptTypeLike | ConceptTypeLike[] | Map<string, ConceptT
 
 /******************/
 export type Interaction = {
-    condition?: EventStackComputation<null>,
+    condition?: InteractionStackComputation<null>,
     role: RoleTypeLike,
     action: string,
-    payload?: Payload
+    payload?: Payload,
+    sideEffects?: SideEffect[]
 }
 
 
 
 /******************/
-export type Activity = {
 
+export type Gateway = {
+    // TODO exclusive 需要增加 port，相当于 switch
+    type: 'exclusive' | 'parallel' | 'inclusive' | 'computation'
+    start: boolean,
+    condition?: InteractionStackComputation<null>,
+}
+
+
+
+// interaction group
+export interface Group extends Activity{
+    type: string,
+    completeCondition?: InteractionStackComputation<null>
+}
+
+
+export type SideEffect = {
+    type: string,
+    name: string,
+    body: (...rest: any[]) => boolean
+}
+
+
+export type AddAs<T> = T & {
+    as?:string
+}
+
+export type InActivityRole = AddAs<RoleTypeLike>
+
+
+export type InActivityPayload = AddAs<ConceptTypeLike> | AddAs<ConceptTypeLike>[] | Map<string, AddAs<ConceptTypeLike>>
+
+
+export type InstanceRef = {
+    // interaction as 同名
+    ref: string,
+    // 可以指向一个局部，例如  payload 可以是个复杂结构
+    index?: string[]
+}
+
+export interface InnerInteraction extends Omit<Interaction, 'role' | 'payload'> {
+    // reference name，用来被其他 interaction 里面引用的的。
+    role: InActivityRole | InstanceRef,
+    payload?: InActivityPayload | InstanceRef
+}
+
+
+export type End = {
+    type: 'end'
+}
+
+export type Direction = {
+    from: InnerInteraction | Gateway | Group,
+    to: InnerInteraction | Gateway | Group | End,
+}
+
+export type Event = any
+
+
+export type Activity = {
+    interactions: {
+        [k: string]: InnerInteraction
+    },
+    directions?: Direction[],
+    gateways?: Gateway[],
+    groups?: {
+        [k: string]: Group,
+    },
+    events?: Event[]
+    sideEffects?: SideEffect[],
 }
 
