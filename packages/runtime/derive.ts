@@ -25,7 +25,7 @@ export function deriveConcept<ConceptRuntimeType extends RuntimeConcept>(concept
         type: concept.type,
         concept,
         attributive: {
-            type: 'eventStackComputation',
+            type: 'interactionStackComputation',
             name: attributiveBody.name,
             body: {
                 type: 'functionBool',
