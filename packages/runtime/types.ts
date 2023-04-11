@@ -8,10 +8,12 @@ type AddId<Origin> = Origin & {id:string}
 
 // TODO  Activity 里面所有字段的类型也要加 id 啊？
 export type Activity = OriginActivity
-export type InnerInteraction = Activity['interactions'][0]
-export type Gateway = Activity['gateways'][0]
-export type Direction = Activity['directions'][0]
-export type Interaction = AddId<OriginInteraction>
+export type InnerInteraction = Activity['interactions'][0];
+type GatewayType = Activity['gateways']!
+export type Gateway = GatewayType[number];
+type DirectionType = Activity['directions']!
+export type Direction = DirectionType[number];
+export type Interaction = OriginInteraction
 
 
 export interface User {

@@ -143,13 +143,20 @@ export class ActivityGraph {
             tail: [...candidateEnd.values()].map((item: InnerInteraction|Group) => this.rawToNode.get(item)!)
         }
     }
-    getInitialState() : ActivityState{
+    getStartInteraction(base = this.graph) : InnerInteraction{
+        const firstNode = base.head[0]
+        if (!(firstNode as GroupNode).group) return firstNode.content as InnerInteraction
+
+        return this.getStartInteraction((firstNode as GroupNode).graph)
+    }
+
+    getInitialState(id?:string) : ActivityState{
         // activity 的 head 只有一个，但是 group 的 head 可以有很多
         const initialAvailableInteraction = this.initAvailableInteractions(this.graph.head[0])
 
         return {
             // TODO 需要一个  uuid 生成
-            id: Math.random().toString(),
+            id: id || Math.random().toString(),
             availableInteractions: {
                 name: '_root_',
                 children: {
