@@ -2,7 +2,7 @@
 
 /******************/
 // 逻辑运算
-interface BoolExpression {
+export interface BoolExpression {
     type: string
 }
 
@@ -211,7 +211,7 @@ export interface Group extends Activity{
 export type SideEffect = {
     type: string,
     name: string,
-    body: (...rest: any[]) => boolean
+    body: (...rest: any[]) => any
 }
 
 
