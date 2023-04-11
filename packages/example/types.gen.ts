@@ -1,6 +1,14 @@
 // TODO 这里应该是根据所有的 interaction 定义生成出来的。
 
-import {PayloadTypeLike} from "../base/types";
+import {
+    Activity as OriginActivity,
+    ConceptType,
+    ConceptTypeLike,
+    InActivityRole,
+    InnerInteraction as OriginInnerInteraction,
+    InstanceRef,
+    Interaction as OriginInteraction, SystemState
+} from "../base/types";
 
 
 export interface User {
@@ -22,3 +30,4 @@ export interface Event {
     payload: Payload
 }
 export type EventStack = Event[]
+
