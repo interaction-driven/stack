@@ -9,6 +9,7 @@ import {
     InstanceRef,
     Interaction as OriginInteraction, SystemState
 } from "../base/types";
+import {QueryArg} from "../runtime/server/callInteraction";
 
 
 export interface User {
@@ -21,13 +22,4 @@ export interface Payload {
     [k: string]: any
 }
 
-export interface Event {
-    name: string,
-    // TODO 根据所有的 Role Type 生成
-    user: User,
-    action: string,
-    // TODO 根据所有的 Payload 信息生成
-    payload: Payload
-}
-export type EventStack = Event[]
 

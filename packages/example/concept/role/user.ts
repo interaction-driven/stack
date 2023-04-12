@@ -8,3 +8,7 @@ export const role: RoleType = {
         name: Types.String
     }
 }
+
+export type User = {
+
+}

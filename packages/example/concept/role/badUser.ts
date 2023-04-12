@@ -1,4 +1,4 @@
-import {Event, EventStack, User} from "../../types.gen";
+import {Event, EventStack, User} from '../../../runtime/types'
 import {DerivedConceptType, SystemState} from "../../../base/types";
 import {deriveConcept} from "../../../runtime/derive";
 import { role as userRole } from './user'
