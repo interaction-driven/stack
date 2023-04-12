@@ -7,13 +7,14 @@ import {
     InteractionStackComputation,
     AND, InActivityRole, SideEffect,
     RoleType,
-    DerivedConceptType, ConceptType, FunctionBool, BoolExpression, NOT, OR, Group
+    DerivedConceptType, ConceptType, FunctionBool, BoolExpression, NOT, OR, Group, TargetDataMatcherFunction
 } from "../../base/types";
 
-import { Activity, Interaction, InnerInteraction, Event, EventStack } from "../types";
+import { Activity, Interaction, InnerInteraction, Event, System, User } from "../types";
 
 import {deriveConcept} from "../derive";
 import {ActivityGraph, ActivityState} from "./AcitivityGraph";
+
 
 import {evaluate} from "./boolExpression";
 
@@ -21,25 +22,7 @@ const GET_ACTION_TYPE = 'get'
 
 
 
-export interface System {
-    setState: (stateName: string, index: string, nextState: any) => void
-    getState: (stateName: string, index: string) => any,
-    stack: {
-        stackHistory: any[],
-        save: (user: User, action: string, payload?: Payload, queryArg?: QueryArg) => void
-    }
-    storage:  {
-        get: (concept: ConceptType, attributives: BoolExpression[], queryArg?: QueryArg) => any
-        set: (concept: ConceptType, item: any) => void
-    },
-    util: {
-        uuid: () => string
-    }
-}
 
-export type User = {
-    [k: string] : any
-}
 
 export type Payload = {
     [k: string] : any
@@ -60,7 +43,12 @@ type RuntimeArg = {
 
 type Context = {
     interaction: Interaction,
-    system: System
+    system: System,
+    activityEvent?: ActivityEvent
+}
+
+export type ActivityEvent = {
+    [k: string]: any
 }
 
 
@@ -82,14 +70,14 @@ function tryEvaluate(message: any, expression: BoolExpression, ...args: any[]) {
 }
 
 // 通过外部就已经把 api call 和具体的 interaction/activity 定义找到了。
-export function callInteraction({ user, payload, queryArg }: RuntimeArg, system: System, interactionIndex: string[], interaction: Interaction ) {
+export function callInteraction({ user, payload, queryArg }: RuntimeArg, system: System, interactionIndex: string[], interaction: Interaction, activityEvent?: ActivityEvent ) {
     const response: any = {
         error: null,
         data: null,
         sideEffects: {}
     }
 
-    const commonArgs = [{ user, payload, queryArg }, { system }]
+    const commonArgs = [{ user, payload, queryArg }, { system, activityEvent }]
 
     try {
 
@@ -110,7 +98,19 @@ export function callInteraction({ user, payload, queryArg }: RuntimeArg, system:
 
 
         // 3 记录事件  优先级2
-        system.stack.save(user, interaction.action, payload, queryArg)
+        const interactionEvent: Event = {
+            id: system.util.uuid(),
+            user,
+            interactionIndex,
+            action: interaction.action,
+            payload,
+            queryArg
+        }
+        system.stack.saveInteractionEvent(interactionEvent)
+        if (activityEvent) {
+            system.stack.saveActivityEvent(activityEvent.id, interactionIndex, interactionEvent)
+        }
+
 
         // 4 执行 effect  优先级1  状态转移 effect
         interaction.sideEffects?.forEach((sideEffect: SideEffect) => {
@@ -121,8 +121,9 @@ export function callInteraction({ user, payload, queryArg }: RuntimeArg, system:
         // TODO 5 get 请求按照 attributive 和 请求的数据格式返回数据   优先级3
         // TODO 要先研究一下 payload 里面的结构，具体的存储可以先考虑用大宽表实现。
         if (interaction.action === GET_ACTION_TYPE) {
-            const [attributives, baseConcept] = flattenConcept(interaction.payload as ConceptTypeLike)
-            response.data = system.storage.get(baseConcept, attributives, queryArg)
+            // const [attributives, baseConcept] = flattenConcept(interaction.payload as ConceptTypeLike)
+            // response.data = system.storage.get(baseConcept, attributives, queryArg)
+            response.data = (interaction.targetData as TargetDataMatcherFunction)(...commonArgs)
         }
 
     } catch( e: any) {
@@ -166,9 +167,9 @@ export function convertActivityInteraction(interactionIndex: string[], interacti
         type: 'functionBool',
         // TODO 要改成具体名字
         name: 'InnerInteractionAvailable',
-        body: ({ user, payload, queryArg }: RuntimeArg, { system } : Context) => {
+        body: ({ user, payload, queryArg }: RuntimeArg, { system, activityEvent } : Context) => {
             // 如果是 startEvent activity 可以为 空
-            const { activityId } = queryArg!
+            const { id: activityId } = activityEvent!
             const state: ActivityState = system.getState('activity', activityId)
             const graph = ActivityGraph.from(activity)
             return graph.isInteractionAvailable(interactionIndex, state)
@@ -190,8 +191,8 @@ export function convertActivityInteraction(interactionIndex: string[], interacti
     const saveRefSideEffect: SideEffect = {
         type: 'state',
         name: 'saveRef',
-        body: ({ user, payload, queryArg }: RuntimeArg, { system } : Context) => {
-            const activityState: ActivityState = system.getState('activity', queryArg.activityId!)
+        body: ({ user, payload, queryArg }: RuntimeArg, { system, activityEvent } : Context) => {
+            const activityState: ActivityState = system.getState('activity', activityEvent!.id!)
 
             const roleAs = (interaction.role as InActivityRole).as
             if (roleAs) {
@@ -213,7 +214,7 @@ export function convertActivityInteraction(interactionIndex: string[], interacti
             }
             // TODO 可能还有更复杂的树形结构的 payload
 
-            system.setState('activity', queryArg.activityId!, activityState)
+            system.setState('activity', activityEvent!.id!, activityState)
 
             return true
         }
@@ -224,8 +225,8 @@ export function convertActivityInteraction(interactionIndex: string[], interacti
 
     // 3.1 转化 ref 成普通匹配的形式
     if ((interaction.role as InstanceRef).ref !== undefined) {
-        const convertedRole = deriveConcept<User>(userRole, function asRef({ user, payload, queryArg }: RuntimeArg, { system } : Context) {
-            const activityState: ActivityState = system.getState('activity', queryArg.activityId!)
+        const convertedRole = deriveConcept<User>(userRole, function asRef({ user, payload, queryArg }: RuntimeArg, { system, activityEvent } : Context) {
+            const activityState: ActivityState = system.getState('activity', activityEvent!.id!)
             const userInstance = activityState.instances[(interaction.role as InstanceRef).ref]
             return userInstance?.id === user.id
         })
@@ -240,11 +241,11 @@ export function convertActivityInteraction(interactionIndex: string[], interacti
     const transformSideEffect: SideEffect = {
         type: 'state',
         name: 'transfer',
-        body: ({queryArg}: RuntimeArg, { system } : Context) => {
+        body: ({queryArg}: RuntimeArg, { system, activityEvent } : Context) => {
             //   如果是 startEvent，要产生一个 effect 该生成 activityId。
             const graph = ActivityGraph.from(activity)
 
-            const activityState: ActivityState = system.getState('activity', queryArg.activityId!)
+            const activityState: ActivityState = system.getState('activity', activityEvent!.id!)
 
             const nextState = graph.completeInteraction(interactionIndex, activityState)
             system.setState('activity', activityState.id, nextState)
@@ -280,6 +281,7 @@ export function recursiveConvertActivityInteraction(raw: Activity|Group, parentI
                     const graph = ActivityGraph.from(activity)
                     const initialState = graph.getInitialState(system.util.uuid())
                     system.setState('activity', initialState.id, initialState)
+
                     return {
                         id: initialState.id
                     }

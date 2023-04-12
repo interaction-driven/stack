@@ -1,5 +1,6 @@
-import {System, User, Payload, QueryArg} from "../server/callInteraction";
+import {QueryArg, ActivityEvent} from "../server/callInteraction";
 import {BoolExpression, ConceptType} from "../../base/types";
+import { Event, System } from "../types";
 import { randomUUID } from 'crypto'
 
 export class MockSystem implements System {
@@ -15,9 +16,23 @@ export class MockSystem implements System {
     }
 
     stack = {
-        stackHistory: [],
-        save(user: User, action: string, payload?: Payload, queryArg?: QueryArg) {
-            // this.stackHistory.push([user, action, payload, queryArg])
+        stackHistory: new Map<string, Event>(),
+        activityStack: new Map<string, ActivityEvent>(),
+        saveInteractionEvent(event: Event) {
+            this.stackHistory.set(event.id ,event)
+        },
+        saveActivityEvent(id: string, interactionIndex: string[], event: Event) {
+            let activityEvent = this.activityStack.get(id)
+            if (!activityEvent) this.activityStack.set(id, (activityEvent = {}))
+            let base = activityEvent
+            const path = interactionIndex.slice(0, interactionIndex.length -1)
+            for(let interactionName of path) {
+                if (!base[interactionName]) {
+                    base[interactionName] = {}
+                }
+                base = base[interactionName]
+            }
+            base[interactionIndex.at(-1)!] = event
         }
     }
     storage = {

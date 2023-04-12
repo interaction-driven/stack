@@ -17,7 +17,6 @@ const userRole: RoleType = {
 
 
 
-
 describe('interaction tests', () => {
     test('convert activity interaction', () => {
         const [startEntry, ...interactionEntries] = recursiveConvertActivityInteraction(activity, [], activity, { userRole })
