@@ -179,13 +179,18 @@ export type ConceptTypeLike = ConceptType | DerivedConceptType<ConceptType>
 
 export type Payload = ConceptTypeLike | ConceptTypeLike[] | Map<string, ConceptTypeLike>
 
+// TODO 补全
+export type TargetDataMatcher = {}
+export type TargetDataMatcherFunction = (...arg0: any[]) => any
+
 /******************/
 export type Interaction = {
     condition?: InteractionStackComputation<null>,
     role: RoleTypeLike,
     action: string,
     payload?: Payload,
-    sideEffects?: SideEffect[]
+    sideEffects?: SideEffect[],
+    targetData?: TargetDataMatcher | TargetDataMatcherFunction
 }
 
 
