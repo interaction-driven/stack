@@ -127,8 +127,6 @@ export function callInteraction({ user, payload, queryArg }: RuntimeArg, system:
         }
 
     } catch( e: any) {
-        // debugger
-        throw e
         response.error = e
     }
 

@@ -5,15 +5,12 @@ import {
 } from "../base/types";
 import {ActivityEvent, QueryArg} from "./server/callInteraction";
 
-type AddId<Origin> = Origin & {id:string}
 
 // TODO  Activity 里面所有字段的类型也要加 id 啊？
 export type Activity = OriginActivity
-export type InnerInteraction = Activity['interactions'][0];
-type GatewayType = Activity['gateways']!
-export type Gateway = GatewayType[number];
-type DirectionType = Activity['directions']!
-export type Direction = DirectionType[number];
+export type InnerInteraction = Exclude<Activity['interactions'], undefined>[0];
+export type Gateway = Exclude<Activity['gateways'], undefined>[0];
+export type Direction = Exclude<Activity['directions'], undefined>[0];
 export type Interaction = OriginInteraction
 
 
@@ -21,7 +18,6 @@ export interface User {
     id: string|number,
     [k: string]: any
 }
-
 
 export interface Payload {
     [k: string]: any
