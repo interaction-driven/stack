@@ -1,0 +1,16 @@
+{
+  "dependencies": {
+    "koa": "^2.14.2"
+  },
+  "name": "example",
+  "version": "0.0.1",
+  "main": "index.js",
+  "devDependencies": {},
+  "scripts": {
+	  "start": "node ./severgen/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}

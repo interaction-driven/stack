@@ -1,7 +1,7 @@
-import {Event, EventStack, User} from '../../../runtime/types'
-import {DerivedConceptType, SystemState} from "../../../base/types";
-import {deriveConcept} from "../../../runtime/derive";
-import { role as userRole } from './user'
+import {Event, EventStack, User} from '../../../runtime/types.ts'
+import {DerivedConceptType, SystemState} from "../../../base/types.ts";
+import {deriveConcept} from "../../../runtime/derive.ts";
+import { role as userRole } from './user.ts'
 
 const isBadUser = (stack: EventStack, event: Event, system: SystemState, user: User) => (false)
 export const role: DerivedConceptType<User> = deriveConcept<User>(userRole, isBadUser)

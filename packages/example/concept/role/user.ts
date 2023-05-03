@@ -1,5 +1,5 @@
-import {RoleType} from "../../../base/types";
-import * as Types from "../../../runtime/baseTypes";
+import {RoleType} from "../../../base/types.ts";
+import * as Types from "../../../runtime/baseTypes.ts";
 
 export const role: RoleType = {
     type: 'role',  // role type

@@ -1,8 +1,7 @@
 
 // TEST TODO
-import * as Types from "../../runtime/baseTypes";
-import { deriveConcept,  } from "../../runtime/derive";
-import {Event, System, User} from '../../runtime/types'
+import * as Types from "../../runtime/baseTypes.ts";
+import {Event, System, User} from '../../runtime/types.ts'
 import {
     Interaction,
     RoleType,
@@ -13,12 +12,12 @@ import {
     Gateway,
     Direction,
     InActivityPayload, InActivityRole, InnerInteraction, AddAs, ConceptTypeLike, Group, End, ConceptType
-} from "../../base/types";
-import { role as otherUserRole } from '../concept/role/otherUser'
-import { role as badUserRole } from '../concept/role/badUser'
-import { role as blockedUserRole } from '../concept/role/blockedUser'
-import { role as userRole } from '../concept/role/user'
-import {ActivityEvent} from "../../runtime/server/callInteraction";
+} from "../../base/types.ts";
+import { role as otherUserRole } from '../concept/role/otherUser.ts'
+import { role as badUserRole } from '../concept/role/badUser.ts'
+import { role as blockedUserRole } from '../concept/role/blockedUser.ts'
+import { role as userRole } from '../concept/role/user.ts'
+import {ActivityEvent} from "../../runtime/server/callInteraction.ts";
 
 
 const MessageConcept = {
@@ -36,7 +35,7 @@ const sendInteraction: InnerInteraction = {
     } as InActivityRole) ,
     action: 'sendFriendRequest',
     payload: new Map<string, any>([
-      ['to', ({ as: 'to', ...otherUserRole } as AddAs<ConceptTypeLike>)],
+      ['to', ({ as: 'to', name: 'OtherUser', ...otherUserRole } as AddAs<ConceptTypeLike>)],
       ['message', MessageConcept]
     ])
 }
@@ -114,7 +113,7 @@ const getNewRequestsToMe: Interaction = {
     role: userRole,
     action: 'get',
     // TODO 应该有个 matcher 的写法
-    targetData({ user }, { system}) {
+    targetData: function allNewRequests({ user }, { system}) {
         return (Array.from(system.stack.stackHistory.values()) as Event[]).filter(({action, payload}: Event) => (
             action === 'sendFriendRequest' && payload.to.id === user.id
         ))
@@ -125,7 +124,7 @@ const getNewRequestsToMe: Interaction = {
 const getAllFriends: Interaction = {
     role: userRole,
     action: 'get',
-    targetData({ user }, { system }) {
+    targetData: function allFrineds({ user }, { system }) {
         const friends: User[] = []
 
         for (let activityEvent of system.stack.activityStack.values()) {
