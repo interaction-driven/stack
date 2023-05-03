@@ -1,4 +1,4 @@
-import {AND, BoolExpression, FunctionBool, InteractionStackComputation, NOT, OR} from "../../base/types.ts";
+import {AND, BoolExpression, FunctionBool, InteractionStackComputation, NOT, OR} from "../../base/types";
 
 type Evaluator = (expression: BoolExpression, ...args: any[]) => boolean
 
