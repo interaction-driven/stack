@@ -1,8 +1,8 @@
 // 用来找下一状态的 工具类。
 
-import {Activity, InnerInteraction, Interaction, Gateway, Direction} from "../types";
-import {Group} from "../../base/types";
-import {deriveConcept} from "../derive";
+import {Activity, InnerInteraction, Interaction, Gateway, Direction} from "../types.ts";
+import {Group} from "../../base/types.ts";
+import {deriveConcept} from "../derive.ts";
 
 type InteractionNode = {
     name: string,

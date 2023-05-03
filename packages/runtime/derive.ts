@@ -1,4 +1,4 @@
-import {ConceptType, FunctionBool, DerivedConceptType} from "../base/types";
+import {ConceptType, FunctionBool, DerivedConceptType} from "../base/types.ts";
 
 /**
  *

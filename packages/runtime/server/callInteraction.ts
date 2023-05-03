@@ -8,15 +8,15 @@ import {
     AND, InActivityRole, SideEffect,
     RoleType,
     DerivedConceptType, ConceptType, FunctionBool, BoolExpression, NOT, OR, Group, TargetDataMatcherFunction
-} from "../../base/types";
+} from "../../base/types.ts";
 
-import { Activity, Interaction, InnerInteraction, Event, System, User } from "../types";
+import { Activity, Interaction, InnerInteraction, Event, System, User } from "../types.ts";
 
-import {deriveConcept} from "../derive";
-import {ActivityGraph, ActivityState} from "./AcitivityGraph";
+import {deriveConcept} from "../derive.ts";
+import {ActivityGraph, ActivityState} from "./AcitivityGraph.ts";
 
 
-import {evaluate} from "./boolExpression";
+import {evaluate} from "./boolExpression.ts";
 
 const GET_ACTION_TYPE = 'get'
 

@@ -2,8 +2,8 @@ import {
     Activity as OriginActivity, BoolExpression, ConceptType,
     InnerInteraction as OriginInnerInteraction,
     Interaction as OriginInteraction
-} from "../base/types";
-import {ActivityEvent, QueryArg} from "./server/callInteraction";
+} from "../base/types.ts";
+import {ActivityEvent, QueryArg} from "./server/callInteraction.ts";
 
 
 // TODO  Activity 里面所有字段的类型也要加 id 啊？

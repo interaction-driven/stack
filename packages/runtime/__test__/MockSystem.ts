@@ -1,6 +1,6 @@
-import {QueryArg, ActivityEvent} from "../server/callInteraction";
-import {BoolExpression, ConceptType} from "../../base/types";
-import { Event, System } from "../types";
+import {QueryArg, ActivityEvent} from "../server/callInteraction.ts";
+import {BoolExpression, ConceptType} from "../../base/types.ts";
+import { Event, System } from "../types.ts";
 import { randomUUID } from 'crypto'
 
 export class MockSystem implements System {
