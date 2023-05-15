@@ -1,6 +1,6 @@
-import {QueryArg, ActivityEvent} from "../../runtime/server/callInteraction";
-import {BoolExpression, ConceptType} from "../../base/types";
-import { Event, System } from "../../runtime/types";
+import {QueryArg, ActivityEvent} from "../runtime/server/callInteraction";
+import {BoolExpression, ConceptType} from "../base/types";
+import { Event, System } from "../runtime/types";
 
 
 const randomUUID = (() => {
