@@ -6,9 +6,10 @@ import Hierarchy from '@antv/hierarchy'
 // @ts-ignore
 import insertCss from 'insert-css'
 
-import {useLayoutEffect, useRef} from "react";
+import {useLayoutEffect, useRef, useState} from "react";
 import { useNavigate } from "react-router-dom";
 import globalCommand from './store/command.ts'
+import EmptyIcon from './assets/empty.svg'
 
 // 定义样式
 insertCss(`
@@ -131,187 +132,191 @@ const  commonNodeSize = {
 }
 
 export default function Module() {
-
-    const data: MindMapData = {
-        id: '1',
-        type: 'topic',
-        label: '站点',
+  const [empty, toggle] = useState(true);
+  const data: MindMapData = {
+    id: "1",
+    type: "topic",
+    label: "站点",
+    children: [
+      {
+        id: "1-1",
+        type: "topic-branch",
+        label: "关系",
         children: [
-            {
-                id: '1-1',
-                type: 'topic-branch',
-                label: '关系',
-                children: [
-                    {
-                        id: '1-1-1',
-                        type: 'topic-branch',
-                        label: '个人',
-                    },
-                    {
-                        id: '1-1-2',
-                        type: 'topic-branch',
-                        label: '群组',
-                    }
-                ],
-            },
-            {
-                id: '1-2',
-                type: 'topic-branch',
-                label: '内容',
-                children: [
-                    {
-                        id: '1-2-1',
-                        type: 'topic-branch',
-                        label: '帖子',
-                    },
-                    {
-                        id: '1-2-2',
-                        type: 'topic-branch',
-                        label: '评论',
-                    }
-                ],
-            },
-            {
-                id: '1-3',
-                type: 'topic-branch',
-                label: '积分',
-            },
+          {
+            id: "1-1-1",
+            type: "topic-branch",
+            label: "个人",
+          },
+          {
+            id: "1-1-2",
+            type: "topic-branch",
+            label: "群组",
+          },
         ],
-    }
+      },
+      {
+        id: "1-2",
+        type: "topic-branch",
+        label: "内容",
+        children: [
+          {
+            id: "1-2-1",
+            type: "topic-branch",
+            label: "帖子",
+          },
+          {
+            id: "1-2-2",
+            type: "topic-branch",
+            label: "评论",
+          },
+        ],
+      },
+      {
+        id: "1-3",
+        type: "topic-branch",
+        label: "积分",
+      },
+    ],
+  };
 
-// 创建画布
-    let graph:Graph
+  // 创建画布
+  let graph: Graph;
 
-    const render = () => {
-        const result: HierarchyResult = Hierarchy.mindmap(data, {
-            direction: 'H',
-            getHeight(d: MindMapData) {
-                return d.height || commonNodeSize.height
-            },
-            getWidth(d: MindMapData) {
-
-                return d.width || commonNodeSize.width
-            },
-            getHGap() {
-                return 40
-            },
-            getVGap() {
-                return 20
-            },
-            getSide: () => {
-                return 'right'
-            },
-        })
-        const cells: Cell[] = []
-        const traverse = (hierarchyItem: HierarchyResult) => {
-            if (hierarchyItem) {
-                const { data, children } = hierarchyItem
-                cells.push(
-                    graph.createNode({
-                        id: data.id,
-                        shape: data.type === 'topic-child' ? 'topic-child' : 'topic',
-                        x: hierarchyItem.x,
-                        y: hierarchyItem.y,
-                        ...commonNodeSize,
-                        label: data.label,
-                        type: data.type,
-                    }),
-                )
-                if (children) {
-                    children.forEach((item: HierarchyResult) => {
-                        const { id, data } = item
-                        cells.push(
-                            graph.createEdge({
-                                shape: 'mindmap-edge',
-                                source: {
-                                    cell: hierarchyItem.id,
-                                    anchor:
-                                        data.type === 'topic-child'
-                                            ? {
-                                                name: 'right',
-                                                args: {
-                                                    dx: -16,
-                                                },
-                                            }
-                                            : {
-                                                name: 'center',
-                                                args: {
-                                                    dx: '25%',
-                                                },
-                                            },
-                                },
-                                target: {
-                                    cell: id,
-                                    anchor: {
-                                        name: 'left',
-                                    },
-                                },
-                            }),
-                        )
-                        traverse(item)
-                    })
-                }
-            }
-        }
-        traverse(result)
-        graph.resetCells(cells)
-        graph.centerContent()
-    }
-
-    const findItem = (
-        obj: MindMapData,
-        id: string,
-    ): {
-        parent: MindMapData | null
-        node: MindMapData | null
-    } | null => {
-        if (obj.id === id) {
-            return {
-                parent: null,
-                node: obj,
-            }
-        }
-        const { children } = obj
+  const render = () => {
+    const result: HierarchyResult = Hierarchy.mindmap(data, {
+      direction: "H",
+      getHeight(d: MindMapData) {
+        return d.height || commonNodeSize.height;
+      },
+      getWidth(d: MindMapData) {
+        return d.width || commonNodeSize.width;
+      },
+      getHGap() {
+        return 40;
+      },
+      getVGap() {
+        return 20;
+      },
+      getSide: () => {
+        return "right";
+      },
+    });
+    const cells: Cell[] = [];
+    const traverse = (hierarchyItem: HierarchyResult) => {
+      if (hierarchyItem) {
+        const { data, children } = hierarchyItem;
+        cells.push(
+          graph.createNode({
+            id: data.id,
+            shape: data.type === "topic-child" ? "topic-child" : "topic",
+            x: hierarchyItem.x,
+            y: hierarchyItem.y,
+            ...commonNodeSize,
+            label: data.label,
+            type: data.type,
+          })
+        );
         if (children) {
-            for (let i = 0, len = children.length; i < len; i += 1) {
-                const res = findItem(children[i], id)
-                if (res) {
-                    return {
-                        parent: res.parent || obj,
-                        node: res.node,
-                    }
-                }
-            }
+          children.forEach((item: HierarchyResult) => {
+            const { id, data } = item;
+            cells.push(
+              graph.createEdge({
+                shape: "mindmap-edge",
+                source: {
+                  cell: hierarchyItem.id,
+                  anchor:
+                    data.type === "topic-child"
+                      ? {
+                          name: "right",
+                          args: {
+                            dx: -16,
+                          },
+                        }
+                      : {
+                          name: "center",
+                          args: {
+                            dx: "25%",
+                          },
+                        },
+                },
+                target: {
+                  cell: id,
+                  anchor: {
+                    name: "left",
+                  },
+                },
+              })
+            );
+            traverse(item);
+          });
         }
-        return null
+      }
+    };
+    traverse(result);
+    graph.resetCells(cells);
+    graph.centerContent();
+  };
+
+  const findItem = (
+    obj: MindMapData,
+    id: string
+  ): {
+    parent: MindMapData | null;
+    node: MindMapData | null;
+  } | null => {
+    if (obj.id === id) {
+      return {
+        parent: null,
+        node: obj,
+      };
     }
-
-
-    const navigate = useNavigate()
-
-
-
-    useLayoutEffect(() => {
-        graph = new Graph({
-            container: containerRef.current!,
-            connecting: {
-                connectionPoint: 'anchor',
-            },
-        })
-
-        // graph.use(new Selection({enabled: true}))
-        graph.on("cell:dblclick", ({ e, x, y, cell, view }) => {
-            navigate('/module/1/activity')
-        });
-
-        globalCommand.showModule = () => {
-            render()
+    const { children } = obj;
+    if (children) {
+      for (let i = 0, len = children.length; i < len; i += 1) {
+        const res = findItem(children[i], id);
+        if (res) {
+          return {
+            parent: res.parent || obj,
+            node: res.node,
+          };
         }
-    })
+      }
+    }
+    return null;
+  };
 
-    const containerRef = useRef(null)
+  const navigate = useNavigate();
 
-    return (
-        <div className="h-full" ref={containerRef}></div>
-    )
+  useLayoutEffect(() => {
+    graph = new Graph({
+      container: containerRef.current!,
+      connecting: {
+        connectionPoint: "anchor",
+      },
+    });
+
+    // graph.use(new Selection({enabled: true}))
+    graph.on("cell:dblclick", ({ e, x, y, cell, view }) => {
+      navigate("/module/1/activity");
+    });
+
+    globalCommand.showModule = () => {
+      toggle(false);
+      render();
+    };
+  }, []);
+
+  const containerRef = useRef(null);
+
+  return (
+    <>
+      {empty && (
+        <div className="absolute h-full w-full flex justify-center items-center">
+          <EmptyIcon />
+        </div>
+      )}
+      <div className="h-full" ref={containerRef}></div>
+    </>
+  );
 }
