@@ -33,7 +33,7 @@ export default function CommandWidget() {
 
     return (
         <div
-            className="fixed top-12 right-2 mt-8 overflow-hidden rounded-lg bg-white shadow-lg">
+            className="fixed top-16 mt-12 right-16 overflow-hidden rounded-lg bg-white shadow-lg">
             <div className="p-4">
                 <div className="flex items-start">
                     <span className="isolate inline-flex rounded-md shadow-sm">

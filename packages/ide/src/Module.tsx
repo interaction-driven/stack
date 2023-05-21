@@ -45,9 +45,10 @@ Graph.registerNode(
             body: {
                 rx: 6,
                 ry: 6,
-                stroke: '#5F95FF',
-                fill: '#EFF4FF',
-                strokeWidth: 1,
+                // stroke: '#5F95FF',
+                // fill: '#EFF4FF',
+                fill: '#d9d9d9',
+                strokeWidth: 0,
             },
             img: {
                 ref: 'body',
@@ -63,7 +64,8 @@ Graph.registerNode(
             },
             label: {
                 fontSize: 14,
-                fill: '#262626',
+                // fill: '#262626',
+                fill: '#2c2c2c',
             },
         },
     },
@@ -90,24 +92,29 @@ Graph.registerConnector(
 
 // 自定义边
 // 边
+// TODO: 边的颜色按理是有逻辑关系的，同一个祖先节点下面所有的边应该是同一色系，并且颜色越来越浅，这里先随机
+const colors = ['#E36161', '#FF974B', '#F6BD16', '#FDA5A5', '#FDA5A5', '#C68BF2']
 Graph.registerEdge(
-    'mindmap-edge',
-    {
-        inherit: 'edge',
-        connector: {
-            name: 'mindmap',
-        },
-        attrs: {
-            line: {
-                targetMarker: '',
-                stroke: '#A2B1C3',
-                strokeWidth: 2,
-            },
-        },
-        zIndex: 0,
+  "mindmap-edge",
+  {
+    inherit: "edge",
+    connector: {
+      name: "smooth",
+      args: {
+        direction: 'H',
+      }
     },
-    true,
-)
+    attrs: {
+      line: {
+        targetMarker: "",
+        stroke: "#A2B1C3",
+        strokeWidth: 3,
+      },
+    },
+    zIndex: 0,
+  },
+  true
+);
 
 interface MindMapData {
     id: string
@@ -127,8 +134,8 @@ interface HierarchyResult {
 }
 
 const  commonNodeSize = {
-    width: 60,
-    height: 30
+    width: 70,
+    height: 36
 }
 
 export default function Module() {
@@ -156,6 +163,11 @@ export default function Module() {
         ],
       },
       {
+        id: "1-3",
+        type: "topic-branch",
+        label: "积分",
+      },
+      {
         id: "1-2",
         type: "topic-branch",
         label: "内容",
@@ -171,11 +183,6 @@ export default function Module() {
             label: "评论",
           },
         ],
-      },
-      {
-        id: "1-3",
-        type: "topic-branch",
-        label: "积分",
       },
     ],
   };
@@ -215,6 +222,11 @@ export default function Module() {
             ...commonNodeSize,
             label: data.label,
             type: data.type,
+            attrs: {
+              body: {
+                fill: data.type === 'topic' ? '#d9d9d9' : '#f2f2f2',
+              },
+            },
           })
         );
         if (children) {
@@ -223,6 +235,11 @@ export default function Module() {
             cells.push(
               graph.createEdge({
                 shape: "mindmap-edge",
+                attrs: {
+                  line: {
+                    stroke: colors[Math.floor(Math.random() * colors.length)],
+                  },
+                },
                 source: {
                   cell: hierarchyItem.id,
                   anchor:
@@ -234,10 +251,10 @@ export default function Module() {
                           },
                         }
                       : {
-                          name: "center",
-                          args: {
-                            dx: "25%",
-                          },
+                          name: "midSide",
+                          // args: {
+                          //   dx: "25%",
+                          // },
                         },
                 },
                 target: {
