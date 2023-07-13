@@ -1,0 +1,11 @@
+{
+  "name": "stack",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "dev:ide": "pnpm -F @stack/ide dev"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
