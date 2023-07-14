@@ -8,6 +8,9 @@ import {
 import { useState } from "react";
 import globalCommand from "./store/command.ts";
 import ChatIcon from './assets/chat.svg';
+import { useChat } from 'ai/react';
+
+const API = 'http://127.0.0.1:7001/chat';
 
 interface Props {
   className?: string;
@@ -18,7 +21,8 @@ export default function ChatWidget(props: Props) {
   const { className } = props;
   const [commandIndex, setCommandIndex] = useState(0);
   const [status, setStatus] = useState(0);
-  const [inputValue, setInputValue] = useState("");
+  // const [inputValue, setInputValue] = useState("");
+  const { messages, input, handleInputChange, handleSubmit } = useChat({ api: API })
 
   const changeStatus = () => {
     if (status === 1) return;
@@ -37,7 +41,7 @@ export default function ChatWidget(props: Props) {
   console.log("render", status);
 
   return (
-    <div className={`${className} z-50 p-6`}>
+    <form className={`${className} z-50 p-6`} onSubmit={handleSubmit}>
       <div className="rounded-xl bg-white shadow-chat border border-gray-bd2 w-chat p-2 flex items-end">
         <div className="w-full grow flex items-start">
           <div className="mx-3 mt-1">
@@ -48,13 +52,14 @@ export default function ChatWidget(props: Props) {
           </label>
           <textarea
             id="chat"
-            value={inputValue}
+            value={input}
             onChange={(e) => {
               const { target } = e;
-              setInputValue(target.value);
+              // setInputValue(target.value);
               // 高度自适应
               target.style.height = "inherit";
               target.style.height = `${target.scrollHeight}px`;
+              handleInputChange(e)
             }}
             name="command"
             className="w-full h-8 overflow-hidden border-0 py-1.5 px-1 text-gray-chat font-sans font-light placeholder:text-gray-ph placeholder:text-xs text-sm resize-none focus:ring-0 focus:outline-none"
@@ -64,7 +69,8 @@ export default function ChatWidget(props: Props) {
         </div>
         <button
           className="mt-3 inline-flex w-full items-center justify-center rounded-md bg-black-bg px-3 py-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:ml-3 sm:mt-0 sm:w-auto"
-          onClick={changeStatus}
+          // onClick={changeStatus}
+          type="submit"
         >
           {status === 0 ? (
             "Send"
@@ -77,6 +83,6 @@ export default function ChatWidget(props: Props) {
           )}
         </button>
       </div>
-    </div>
+    </form>
   );
 }

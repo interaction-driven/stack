@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "dev:ide": "pnpm -F @stack/ide dev"
+    "dev": "pnpm --parallel -F @stack/server -F @stack/ide dev",
+    "dev:ide": "pnpm -F @stack/ide dev",
+    "dev:server": "pnpm -F @stack/server dev"
   },
   "keywords": [],
   "author": "",
