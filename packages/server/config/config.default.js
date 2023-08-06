@@ -17,12 +17,15 @@ module.exports = appInfo => {
 
   // add your middleware config here
   config.middleware = [];
-
   // add your user config here
   const userConfig = {
     // myAppName: 'egg',
     security: {
       csrf: { enable: false },
+    },
+    cors: {
+      allowMethods: 'GET,HEAD,PUT,POST,DELETE,PATCH',
+      origin: '*',
     },
   };
 

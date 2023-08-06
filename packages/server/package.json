@@ -7,9 +7,12 @@
     "declarations": true
   },
   "dependencies": {
+    "dotenv": "^16.3.1",
     "egg": "^3",
     "egg-cors": "^2.2.3",
-    "egg-scripts": "^2"
+    "egg-scripts": "^2",
+    "langchain": "^0.0.123",
+    "openai": "^3.3.0"
   },
   "devDependencies": {
     "egg-bin": "^5",
@@ -24,7 +27,7 @@
   "scripts": {
     "start": "egg-scripts start --daemon --title=egg-server-@stack/server",
     "stop": "egg-scripts stop --title=egg-server-@stack/server",
-    "dev": "egg-bin dev",
+    "dev": "EGG_SERVER_ENV=local egg-bin dev",
     "debug": "egg-bin debug",
     "test": "npm run lint -- --fix && npm run test-local",
     "test-local": "egg-bin test",
