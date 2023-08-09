@@ -140,7 +140,7 @@ const  commonNodeSize = {
 
 export default function Module() {
   const [empty, toggle] = useState(true);
-  const data: MindMapData = {
+  const testData: MindMapData = {
     id: "1",
     type: "topic",
     label: "站点",
@@ -190,7 +190,7 @@ export default function Module() {
   // 创建画布
   let graph: Graph;
 
-  const render = () => {
+  const render = (data: MindMapData = testData) => {
     const result: HierarchyResult = Hierarchy.mindmap(data, {
       direction: "H",
       getHeight(d: MindMapData) {
@@ -318,9 +318,9 @@ export default function Module() {
       navigate("/module/1/activity");
     });
 
-    globalCommand.showModule = () => {
+    globalCommand.showModule = (data: MindMapData) => {
       toggle(false);
-      render();
+      render(data);
     };
   }, []);
 

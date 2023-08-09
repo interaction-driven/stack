@@ -12,7 +12,8 @@
     "egg-cors": "^2.2.3",
     "egg-scripts": "^2",
     "langchain": "^0.0.123",
-    "openai": "^3.3.0"
+    "openai": "^3.3.0",
+    "zod": "^3.21.4"
   },
   "devDependencies": {
     "egg-bin": "^5",
