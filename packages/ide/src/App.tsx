@@ -7,7 +7,6 @@ import Activity from "./Activity";
 import Editor from "./Editor";
 import ActivityPage from "./ActivityPage";
 import EditorOverlay from "./EditorOverlay";
-import ChatWidget from "./ChatWidget";
 import {
     Outlet,
     useLocation
@@ -32,7 +31,6 @@ function App() {
       </div>
       <EditorOverlay />
       <ConceptOverlay />
-      <ChatWidget className="fixed lg:left-full-menu sm:left-mini-menu bottom-6" />
     </div>
   );
 }

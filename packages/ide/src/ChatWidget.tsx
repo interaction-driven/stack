@@ -10,16 +10,15 @@ import globalCommand from "./store/command.ts";
 import ChatIcon from './assets/chat.svg';
 import { nanoid } from 'nanoid'
 
-const api = `${import.meta.env.VITE_API_HOST}/module`
-
 interface Props {
   className?: string;
+  subject: string;
+  action: string;
 }
 const chatId = nanoid();
-const commandToCall = ["showModule", "showActivity", "showCode"];
 export default function ChatWidget(props: Props) {
-  const { className } = props;
-  const [commandIndex, setCommandIndex] = useState(0);
+  // 布局信息理论上应该由外部容器提供，给一个默认值
+  const { className = 'fixed lg:left-full-menu sm:left-mini-menu bottom-6', subject, action } = props;
   const [status, setStatus] = useState(0);
   const [message, setMessage] = useState("");
 
@@ -29,6 +28,7 @@ export default function ChatWidget(props: Props) {
     // debugger
     setStatus(1);
 
+    const api = `${import.meta.env.VITE_API_HOST}/${subject}`;
     fetch(api, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -38,8 +38,7 @@ export default function ChatWidget(props: Props) {
       .then((data) => {
         console.log(message, data);
         setStatus(0);
-        setCommandIndex(commandIndex + 1);
-        globalCommand[commandToCall[commandIndex]]?.(data);
+        globalCommand[action]?.(data);
         setMessage("");
         document.querySelector("#chat")!.style.height = "32px";
       });

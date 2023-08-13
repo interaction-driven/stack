@@ -10,6 +10,7 @@ import {useLayoutEffect, useRef, useState} from "react";
 import { useNavigate } from "react-router-dom";
 import globalCommand from './store/command.ts'
 import EmptyIcon from './assets/empty.svg'
+import ChatWidget from './ChatWidget.js';
 
 // 定义样式
 insertCss(`
@@ -334,6 +335,7 @@ export default function Module() {
         </div>
       )}
       <div className="h-full" ref={containerRef}></div>
+      <ChatWidget subject="module" action="showModule" />
     </>
   );
 }
