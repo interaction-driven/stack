@@ -2,6 +2,10 @@
 
 ## QuickStart
 
+新建 .env 文件，在文件中配置 openai api key
+```
+OPENAI_API_KEY='your key'
+```
 <!-- add docs here for user -->
 
 see [egg docs][egg] for more detail.
