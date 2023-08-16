@@ -325,7 +325,8 @@ function createGraphNodeDataFromActivity(activity: Activity, parent?: string) {
   };
 }
 
-export default function ActivityGraph() {
+export default function ActivityGraph({ data }: { data: any }) {
+  console.log('activity', data);
   useLayoutEffect(() => {
     const graph = new Graph({
       container: containerRef.current!,
@@ -356,7 +357,7 @@ export default function ActivityGraph() {
 
     // createGraphNodeFromActivity(graph, activityData)
 
-    graph.fromJSON(activityData);
+    graph.fromJSON(data);
 
     // fetch('/data/bpmn.json')
     //     .then((response) => response.json())

@@ -6,19 +6,20 @@ import {
   Cog6ToothIcon,
 } from "@heroicons/react/20/solid";
 import { useState } from "react";
-import globalCommand from "./store/command.ts";
+import globalCommand from "./store/command";
 import ChatIcon from './assets/chat.svg';
 import { nanoid } from 'nanoid'
+import cache from './store/cache';
 
 interface Props {
+  moduleId?: string;
   className?: string;
   subject: string;
   action: string;
 }
-const chatId = nanoid();
 export default function ChatWidget(props: Props) {
   // 布局信息理论上应该由外部容器提供，给一个默认值
-  const { className = 'fixed lg:left-full-menu sm:left-mini-menu bottom-6', subject, action } = props;
+  const { moduleId, className = 'fixed lg:left-full-menu sm:left-mini-menu bottom-6', subject, action } = props;
   const [status, setStatus] = useState(0);
   const [message, setMessage] = useState("");
 
@@ -32,21 +33,22 @@ export default function ChatWidget(props: Props) {
     fetch(api, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: chatId, message }),
+      body: JSON.stringify({ id: cache.chatId ?? nanoid(), moduleId, message }),
     })
       .then((res) => res.json())
-      .then((data) => {
+      .then((res) => {
+        const { id, data } = res;
         console.log(message, data);
         setStatus(0);
-        globalCommand[action]?.(data);
+        globalCommand[action]?.(id, data);
+        cache.chatId = id;
         setMessage("");
         document.querySelector("#chat")!.style.height = "32px";
       });
     // TEST
     // setTimeout(() => {
     //   setStatus(0);
-    //   setCommandIndex(commandIndex + 1);
-    //   globalCommand[commandToCall[commandIndex]]?.();
+    //   globalCommand[action]?.();
     // }, 1000)
   };
 

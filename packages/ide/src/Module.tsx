@@ -316,10 +316,10 @@ export default function Module() {
 
     // graph.use(new Selection({enabled: true}))
     graph.on("cell:dblclick", ({ e, x, y, cell, view }) => {
-      navigate("/module/1/activity");
+      navigate(`/module/${cell.id}/activity`);
     });
 
-    globalCommand.showModule = (data: MindMapData) => {
+    globalCommand.showModule = (id: string, data: MindMapData) => {
       toggle(false);
       render(data);
     };

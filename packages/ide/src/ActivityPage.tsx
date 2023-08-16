@@ -1,21 +1,25 @@
 import ActivityItem from "./ActivityItem";
 import InteractionItem from "./InteractionItem";
-import * as activityData from "./data/activity";
+import { mapActivity } from "./data/activity";
 import CommandWidget from "./CommandWidget";
 import { useState } from "react";
 import globalCommand from "./store/command.ts";
+import ChatWidget from "./ChatWidget";
+import { useParams } from "react-router-dom";
+import { Activity } from "../../base/types";
 
 export default function ActivityPage() {
   const [activityItems, setActivityItems] = useState([]);
   const [interactions, setInteractions] = useState([]);
+  const params = useParams();
 
-  globalCommand.showActivity = () => {
+  globalCommand.showActivity = (data: Activity) => {
     setActivityItems([
       {
         name: "发起好友请求与响应",
         description:
           "用户向其他用户发起好友请求，其他好友可以同意或者拒绝，同时用户也可以自己取消。",
-        activity: activityData,
+        activity: mapActivity(data),
       },
     ]);
 
@@ -57,6 +61,8 @@ export default function ActivityPage() {
       </ul>
 
       <CommandWidget />
+
+      <ChatWidget subject="activity" moduleId={params.moduleId} action="showActivity" />
     </div>
   );
 }

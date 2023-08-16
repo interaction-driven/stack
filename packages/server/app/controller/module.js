@@ -1,16 +1,7 @@
 const { Controller } = require('egg');
-const { ChatOpenAI } = require('langchain/chat_models/openai');
-const { AIMessage, HumanMessage, SystemMessage } = require('langchain/schema');
-const { StructuredOutputParser, OutputFixingParser } = require('langchain/output_parsers');
+const { StructuredOutputParser } = require('langchain/output_parsers');
 const { z } = require('zod');
-
-require('dotenv').config();
-
-const model = new ChatOpenAI({
-  openAIApiKey: process.env.OPENAI_API_KEY,
-  modelName: 'gpt-3.5-turbo', // gpt4 又用不了
-  temperature: 0,
-});
+const { LLM } = require('../model/llm');
 
 // interface MindMapData {
 //   id: string
@@ -31,34 +22,16 @@ const outputParser = StructuredOutputParser.fromZodSchema(
   })
 );
 
-const outputFixingParser = OutputFixingParser.fromLLM(model, outputParser);
-
-const systemPrompt = `
-You are an excellent product designer. Based on the user's needs, you can assist them in designing an ideal product.
-Please list the overall functional modules of the product in the following format:
-${outputFixingParser.getFormatInstructions()}
-`;
-
-const historyCache = {};
+const systemPrompt = `You are an excellent product designer. Based on the user's needs, you can assist them in designing an ideal product.
+Please list the overall functional modules of the product in the following format:`;
 
 class ChatController extends Controller {
   async index() {
     const { ctx } = this;
     const { id, message } = ctx.request.body;
-    let messages = historyCache[id];
-    console.log('history: ', historyCache[id], 'message: ', message);
-    if (!messages) {
-      messages = [new SystemMessage(systemPrompt)];
-      historyCache[id] = messages;
-    }
-    messages.push(new HumanMessage(message));
-    const output = await model.call(messages);
-    messages.push(new AIMessage(output.content));
-    console.log('result: ', output.content, messages);
-    const modules = await outputFixingParser.parse(output.content);
-    console.log('modules: ', modules);
-
-    ctx.body = modules;
+    const llm = new LLM(systemPrompt, outputParser);
+    const modules = await llm.call(id, message);
+    ctx.body = { id, data: modules };
   }
 }
 
