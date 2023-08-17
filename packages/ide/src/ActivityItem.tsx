@@ -6,8 +6,8 @@ export default function ActivityItem({ name, description, activity} : { name: st
             <h3 className="text-base font-semibold leading-7 text-gray-900">{name}</h3>
             <p className="mt-1 max-w-2xl text-sm leading-6 text-gray-500">{description}</p>
         </div>
-        <div className="mt-6 border-t border-gray-100 h-[36rem]">
-            <ActivityGraph />
+        <div className="mt-6 border-t border-gray-100 h-[42rem]">
+            <ActivityGraph data={activity} />
         </div>
     </div>
 }
