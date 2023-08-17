@@ -92,82 +92,114 @@ const { LLM } = require('../model/llm');
 //   index?: string[]
 // }
 
-const ConditionSchema = z.object({
-  type: z.literal('interactionStackComputation'),
-  name: z.string(),
-  body: z.function(z.tuple([z.any(), z.any(), z.any(), z.any()]), z.boolean()),
-});
-const ConceptTypeSchema = z.object({
-  type: z.string(),
-  attributes: z.record(z.any()),
-  as: z.string().optional(),
-});
-const DerivedConceptTypeSchema = z.object({
-  concept: ConceptTypeSchema,
-  attributive: ConditionSchema,
-});
-const ConceptTypeLikeSchema = z.union([ConceptTypeSchema, DerivedConceptTypeSchema]);
-const RoleTypeSchema = z.object({
-  type: z.string(),
-  attributes: z.record(z.any()),
-  as: z.string().optional(),
-});
-const InActivityRoleSchema = z.union([RoleTypeSchema, DerivedConceptTypeSchema]);
-const InActivityPayloadSchema = z.union([ConceptTypeLikeSchema, z.array(ConceptTypeLikeSchema), z.record(ConceptTypeLikeSchema)]);
+// const ConditionSchema = z.object({
+//   type: z.literal('interactionStackComputation'),
+//   name: z.string(),
+//   body: z.function(z.tuple([z.any(), z.any(), z.any(), z.any()]), z.boolean()),
+// });
+// const ConceptTypeSchema = z.object({
+//   type: z.string(),
+//   attributes: z.record(z.any()),
+//   as: z.string().optional(),
+// });
+// const DerivedConceptTypeSchema = z.object({
+//   concept: ConceptTypeSchema,
+//   attributive: ConditionSchema,
+// });
+// const ConceptTypeLikeSchema = z.union([ConceptTypeSchema, DerivedConceptTypeSchema]);
+// const RoleTypeSchema = z.object({
+//   type: z.string(),
+//   attributes: z.record(z.any()),
+//   as: z.string().optional(),
+// });
+// const InActivityRoleSchema = z.union([RoleTypeSchema, DerivedConceptTypeSchema]);
+// const InActivityPayloadSchema = z.union([ConceptTypeLikeSchema, z.array(ConceptTypeLikeSchema), z.record(ConceptTypeLikeSchema)]);
 
-const SideEffectSchema = z.object({
-  type: z.string(),
-  name: z.string(),
-  body: z.function(z.tuple([z.any(), z.any(), z.any(), z.any()]), z.any()),
+// const SideEffectSchema = z.object({
+//   type: z.string(),
+//   name: z.string(),
+//   body: z.function(z.tuple([z.any(), z.any(), z.any(), z.any()]), z.any()),
+// });
+// const InstanceRefSchema = z.object({
+//   ref: z.string(),
+//   index: z.array(z.string()).optional(),
+// });
+// const InnerInteractionSchema = z.object({
+//   condition: ConditionSchema.optional(),
+//   role: z.union([InActivityRoleSchema, InstanceRefSchema]),
+//   action: z.string(),
+//   payload: z.union([InActivityPayloadSchema, InstanceRefSchema]).optional(),
+//   sideEffects: z.array(SideEffectSchema).optional(),
+//   targetData: z.union([z.any(), z.function(z.tuple([z.any(), z.any(), z.any(), z.any()]), z.any())]).optional(),
+// });
+// const DirectionSchema = z.object({
+//   from: z.union([InnerInteractionSchema, z.string()]),
+//   to: z.union([InnerInteractionSchema, z.string()]),
+// });
+// const GatewaySchema = z.object({
+//   type: z.union([z.literal('exclusive'), z.literal('parallel'), z.literal('inclusive'), z.literal('computation')]),
+//   start: z.boolean(),
+//   condition: ConditionSchema.optional(),
+// });
+// const GroupSchema = z.object({
+//   type: z.string(),
+//   completeCondition: ConditionSchema.optional(),
+// });
+// const EventSchema = z.any();
+// const ActivitySchema = z.object({
+//   interactions: z.record(InnerInteractionSchema),
+//   directions: z.array(DirectionSchema).optional(),
+//   gateways: z.record(GatewaySchema).optional(),
+//   groups: z.record(GroupSchema).optional(),
+//   events: z.array(EventSchema).optional(),
+//   sideEffects: z.array(SideEffectSchema).optional(),
+// });
+
+// 上面是根据 types 生成的 schema，有点复杂，下面是根据 demo 数据生成的 schema，加了一些默认值和描述，gpt3.5 容易理解一些
+
+const RoleConceptSchema = z.object({
+  type: z.string().default('role').describe('type of the concept, default is role'),
+  attributes: z.record(z.any()).default({ id: {}, name: {} }).describe('attributes of the role'),
+  as: z.string().optional().describe('reference name, will be used in other interactions'),
 });
-const InstanceRefSchema = z.object({
-  ref: z.string(),
-  index: z.array(z.string()).optional(),
+const MessageConceptSchema = z.object({
+  type: z.string().default('message').describe('type of the concept, default is message'),
+  attributes: z.record(z.any()).default({ content: {} }).describe('attributes of the message'),
 });
-const InnerInteractionSchema = z.object({
-  condition: ConditionSchema.optional(),
-  role: z.union([InActivityRoleSchema, InstanceRefSchema]),
-  action: z.string(),
-  payload: z.union([InActivityPayloadSchema, InstanceRefSchema]).optional(),
-  sideEffects: z.array(SideEffectSchema).optional(),
-  targetData: z.union([z.any(), z.function(z.tuple([z.any(), z.any(), z.any(), z.any()]), z.any())]).optional(),
-});
-const DirectionSchema = z.object({
-  from: z.union([InnerInteractionSchema, z.string()]),
-  to: z.union([InnerInteractionSchema, z.string()]),
-});
-const GatewaySchema = z.object({
-  type: z.union([z.literal('exclusive'), z.literal('parallel'), z.literal('inclusive'), z.literal('computation')]),
-  start: z.boolean(),
-  condition: ConditionSchema.optional(),
+const ActionSchema = z.string().describe('action of the interaction');
+const PayloadSchema = z.record(z.string(), z.union([RoleConceptSchema, MessageConceptSchema])).optional().default({})
+  .describe('object clause of the interaction, key is the name of the concept, value is the concept');
+const InteractionSchema = z.object({
+  role: RoleConceptSchema.describe('the subject of the interaction(who)'),
+  action: ActionSchema.describe('the predicate of the interaction(do)'),
+  payload: PayloadSchema.optional().describe('the object of the interaction(what)'),
 });
 const GroupSchema = z.object({
-  type: z.string(),
-  completeCondition: ConditionSchema.optional(),
+  type: z.union([z.literal('or'), z.literal('and')]).default('or').describe('the logic relation of the interactions in the group'),
+  interactions: z.array(InteractionSchema).describe('the interactions in the group'),
 });
-const EventSchema = z.any();
+const DirectionSchema = z.object({
+  from: InteractionSchema.describe('the source of the interaction'),
+  to: InteractionSchema.describe('the target of the interaction'),
+});
 const ActivitySchema = z.object({
-  interactions: z.record(InnerInteractionSchema),
-  directions: z.array(DirectionSchema).optional(),
-  gateways: z.record(GatewaySchema).optional(),
-  groups: z.record(GroupSchema).optional(),
-  events: z.array(EventSchema).optional(),
-  sideEffects: z.array(SideEffectSchema).optional(),
+  interactions: z.record(InteractionSchema).describe('the interactions in the activity(nodes)'),
+  groups: z.record(GroupSchema).optional().describe('the groups in the activity(nodes)'),
+  directions: z.array(DirectionSchema).describe('the directions in the activity(edges)'),
 });
-
 const outputParser = StructuredOutputParser.fromZodSchema(ActivitySchema);
 
-const genPrompt = module => `Now let's focus on the module ${module}.
-Based on the user's needs, please design the activity diagram of the module in the following format:`;
+const genPrompt = module => `Now let's focus on the module <${module}>.
+Based on the user's needs, please follow the instructions below to design the flowchart.`;
 
 class ChatController extends Controller {
   async index() {
     const { ctx } = this;
-    const { id, module, message } = ctx.request.body;
-    console.log('id', id, 'module', module, 'message', message);
-    const systemPrompt = genPrompt(module);
+    const { id, moduleId, message } = ctx.request.body;
+    console.log('id', id, 'module', moduleId, 'message', message);
+    const systemPrompt = genPrompt(moduleId);
     const llm = new LLM(systemPrompt, outputParser);
-    const activity = await llm.call(id, message);
+    const activity = await llm.call(id, message, moduleId);
     ctx.body = { id, data: activity };
   }
 }

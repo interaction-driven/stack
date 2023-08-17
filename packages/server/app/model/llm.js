@@ -5,6 +5,7 @@ require('dotenv').config();
 
 // TODO: use redis to store history
 const LLMHistory = {};
+const CurrentModule = {};
 
 class LLM {
   constructor(systemPrompt, outputParser) {
@@ -17,20 +18,23 @@ class LLM {
     this.systemPrompt = `${systemPrompt}\n${this.outputFixingParser.getFormatInstructions()}`;
   }
 
-  async call(id, message) {
+  async call(id, message, moduleId) {
     const { systemPrompt, model, outputFixingParser } = this;
     let messages = LLMHistory[id];
-    console.log('history: ', LLMHistory[id], 'message: ', message);
+    console.log('=========history: ', LLMHistory[id], 'message: ', systemPrompt);
     if (!messages) {
       messages = [new SystemMessage(systemPrompt)];
       LLMHistory[id] = messages;
+    } else if (moduleId && CurrentModule[id] !== moduleId) {
+      messages.push(new SystemMessage(systemPrompt));
+      CurrentModule[id] = moduleId;
     }
     messages.push(new HumanMessage(message));
     const output = await model.call(messages);
+    console.log('========result: ', output.content);
     messages.push(new AIMessage(output.content));
-    console.log('result: ', output.content, messages);
     const modules = await outputFixingParser.parse(output.content);
-    console.log('modules: ', modules);
+    console.log('========modules: ', modules);
     return modules;
   }
 }

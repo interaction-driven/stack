@@ -23,7 +23,7 @@ const outputParser = StructuredOutputParser.fromZodSchema(
 );
 
 const systemPrompt = `You are an excellent product designer. Based on the user's needs, you can assist them in designing an ideal product.
-Please list the overall functional modules of the product in the following format:`;
+Please follow the instructions below to list the overall functional modules of the product.`;
 
 class ChatController extends Controller {
   async index() {
